@@ -1,117 +1,138 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
-  Text,
-  useColorScheme,
   View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  TouchableHighlight,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const App = () => {
+  const [counter, setCounter] = useState(5);
+  const [gameOver, setGameOver] = useState(false);
+  const [gameOverMessage, setGameOverMessage] = useState('');
+  const [direction, setDirection] = useState('decrement');
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  useEffect(() => {
+    if (counter <= 0) {
+      setGameOver(true);
+      setGameOverMessage('You Starved');
+      return;
+    } else if (counter >= 10) {
+      setGameOver(true);
+      setGameOverMessage('You got Heart Attack');
+      return;
+    }
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+    const interval = setTimeout(() => {
+      setCounter(prevCounter => prevCounter + (direction === 'increment' ? 1 : -1));
+    }, 1000);
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+    return () => clearTimeout(interval);
+  }, [counter, direction]);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const resetGame = () => {
+    setCounter(5);
+    setDirection('decrement');
+    setGameOver(false);
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+    <SafeAreaView style={styles.container}>
+      {/* Game Over Overlay */}
+      <Modal visible={gameOver} transparent={true} animationType="fade">
+        <View style={styles.gameOverOverlay}>
+          <Text style={styles.gameOverText}>{gameOverMessage}</Text>
+          <TouchableHighlight style={styles.repentButton} onPress={resetGame}>
+            <Text style={styles.repentButtonText}>Repent</Text>
+          </TouchableHighlight>
         </View>
-      </ScrollView>
+      </Modal>
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Food Sins</Text>
+      </View>
+      
+      {/* Counter Display */}
+      <View style={styles.counterContainer}>
+        <Text style={styles.counterText}>{counter}</Text>
+      </View>
+      
+      {/* Buttons */}
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity style={styles.button} onPress={() => !gameOver && setDirection('increment')} disabled={gameOver}>
+          <Text style={styles.buttonText}>More Food</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => !gameOver && setDirection('decrement')} disabled={gameOver}>
+          <Text style={styles.buttonText}>Less Food</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
-  sectionTitle: {
+  header: {
+    paddingTop: 20,
+    paddingBottom: 10,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  counterContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  highlight: {
-    fontWeight: '700',
+  counterText: {
+    fontSize: 48,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 50,
+  },
+  button: {
+    backgroundColor: '#007bff',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 20,
+  },
+  gameOverOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  gameOverText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: 'red',
+    marginBottom: 20,
+  },
+  repentButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+  },
+  repentButtonText: {
+    color: '#ffffff',
+    fontSize: 20,
   },
 });
 
